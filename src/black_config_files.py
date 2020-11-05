@@ -24,33 +24,41 @@ def _open_config_files() -> Iterator[TextIO]:
                 yield fobj
 
 
-def _get_options_from_config_files() -> ParamsType:
+def _get_options_from_config_files():
     options: ParamsType = {}
 
     for file_stream in _open_config_files():
-        config = configparser.ConfigParser()
-        config.read_file(file_stream)
-
-        for section_name in CONFIG_SECTIONS:
-            if section_name not in config:
-                continue
-
-            for key, value in dict(config[section_name]).items():
-                try:
-                    value = config.getboolean(section_name, key)
-                except ValueError:
-                    pass
-                try:
-                    value = config.getint(section_name, key)
-                except ValueError:
-                    pass
-
-                if value is False:
-                    continue
-
-                options[_make_key(key)] = _make_value(value)
+        options.update(_get_options_from_stream(file_stream))
 
     return options
+
+
+def _get_options_from_stream(file_stream: TextIO) -> ParamsType:
+    result: ParamsType = {}
+
+    config = configparser.ConfigParser()
+    config.read_file(file_stream)
+
+    for section_name in CONFIG_SECTIONS:
+        if section_name not in config:
+            continue
+
+        for key, value in dict(config[section_name]).items():
+            try:
+                value = config.getboolean(section_name, key)
+            except ValueError:
+                pass
+            try:
+                value = config.getint(section_name, key)
+            except ValueError:
+                pass
+
+            if value is False:
+                continue
+
+            result[_make_key(key)] = _make_value(value)
+
+    return result
 
 
 def _make_key(value: str) -> str:
@@ -81,6 +89,9 @@ def main():
 
     if "--help" in argv:
         return _run_black()
+
+    # --check
+    # --code
 
     if f"--{NO_CONFIG_FLAG}" in argv:
         argv.remove(f"--{NO_CONFIG_FLAG}")
