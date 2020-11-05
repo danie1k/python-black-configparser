@@ -12,9 +12,9 @@ def get_long_description() -> str:
 
 setup(
     name="black_config_files",
-    version="0.0.2",
+    version="0.0.3",
     description=(
-        "Proxy CLI for black (The uncompromising code formatter) "
+        "Seamless Proxy CLI for black (The uncompromising code formatter) "
         "with support for setup.cfg & tox.ini config files"
     ),
     long_description=get_long_description(),
@@ -28,8 +28,11 @@ setup(
     license="MIT",
     py_modules=["black_config_files"],
     python_requires=">=3.6",
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
     zip_safe=False,
-    install_requires=["black>=18.6b2", "click>=6.5"],
+    install_requires=["black>=18.6b2", "click>=6.5", "sh>=1.13.0"],
+    test_suite="tests.test_black_config_files",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
