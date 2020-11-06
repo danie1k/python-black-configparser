@@ -1,9 +1,12 @@
 import io
 from textwrap import dedent
+from typing import Any, Dict
 
 import pytest
 
-import black_config_files
+import black_configparser
+
+# pylint:disable=protected-access
 
 GIVEN_CONFIG_FILES = (
     (
@@ -36,7 +39,7 @@ GIVEN_CONFIG_FILES = (
         r"""
         [tools:black]
         line-length = 120
-        target_version = 
+        target_version =
           py36
           py37
           py38
@@ -51,10 +54,10 @@ EXPECTED_CONFIG_OPTIONS = (
     {
         "--foo": None,
         "--lorem": ("None",),
-        "--ipsum": (42,),
+        "--ipsum": ("42",),
     },
     {
-        "-a": (1,),
+        "-a": ("1",),
         "-c": ("3.14",),
     },
     {
@@ -62,7 +65,7 @@ EXPECTED_CONFIG_OPTIONS = (
         "--tools-lorem": ("None",),
     },
     {
-        "--line-length": (120,),
+        "--line-length": ("120",),
         "--target-version": ("py36", "py37", "py38"),
         "--pyi": None,
         "--skip-string-normalization": None,
@@ -78,7 +81,9 @@ EXPECTED_CONFIG_OPTIONS = (
     "given_config_file, expected_result",
     zip(GIVEN_CONFIG_FILES, EXPECTED_CONFIG_OPTIONS),
 )
-def test_get_options_from_stream(given_config_file, expected_result) -> None:
+def test_get_options_from_stream(
+    given_config_file: str, expected_result: Dict[str, Any]
+) -> None:
     file = io.StringIO(dedent(given_config_file))
-    result = black_config_files._get_options_from_stream(file)
+    result = black_configparser._get_options_from_stream(file, "lorem_ipsum")
     assert result == expected_result

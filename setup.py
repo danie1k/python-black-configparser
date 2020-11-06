@@ -24,6 +24,9 @@ setup(
     package_data={"black_configparser": ("py.typed",)},
     python_requires=">=3.6",
     install_requires=("black>=18.6b2", "click>=6.5", "sh>=1.13.0"),
+    extras_require={
+        "tests": ("pytest>=6.0", "pytest-sugar>=0.9"),
+    },
     zip_safe=False,
     classifiers=[
         "Development Status :: 4 - Beta",
