@@ -1,21 +1,32 @@
 import collections
 import os
+from typing import Iterator
 from unittest import mock
 
 import pytest
 
 import black_configparser
 
-# pylint:disable=protected-access
+# pylint:disable=protected-access,redefined-outer-name,unused-argument
 
 CWD = os.path.dirname(__file__)
 
 
-@mock.patch.object(
-    black_configparser, "_get_options_from_config_files", return_value={}
-)
+@pytest.yield_fixture()  # type:ignore
+def mock_options_getters() -> Iterator[None]:
+    with mock.patch.object(
+        black_configparser, "_convert_options_to_argv", return_value=True
+    ) as mocked_convert_options_to_argv, mock.patch.object(
+        black_configparser, "_get_options_from_config_files", return_value={}
+    ) as mocked_get_options_from_config_files:
+        yield
+
+        mocked_get_options_from_config_files.assert_called_once()
+        mocked_convert_options_to_argv.assert_called_once()
+
+
 def test_unsupported_argument_should_raise_exception(
-    mocked_function: mock.MagicMock,
+    mock_options_getters: Iterator[None],
 ) -> None:
     given_user_given_argv = ["-foo"]
     expected_error = (
@@ -26,15 +37,10 @@ def test_unsupported_argument_should_raise_exception(
     with pytest.raises(RuntimeError, match=expected_error):
         black_configparser._prepare_argv(given_user_given_argv)
 
-    mocked_function.assert_called_once()
 
-
-@mock.patch.object(
-    black_configparser, "_get_options_from_config_files", return_value={}
-)
 @pytest.mark.parametrize("argument_name", ("--help", "--version"))
 def test_arguments_which_should_skip_processing_arguments(
-    mocked_function: mock.MagicMock, argument_name: str
+    mock_options_getters: Iterator[None], argument_name: str
 ) -> None:
     given_user_given_argv = [argument_name, "--foo", "bar", "--line-length=120"]
     expected_result = tuple(given_user_given_argv)
@@ -42,14 +48,10 @@ def test_arguments_which_should_skip_processing_arguments(
     result = black_configparser._prepare_argv(given_user_given_argv)
 
     assert result == expected_result
-    mocked_function.assert_not_called()
 
 
-@mock.patch.object(
-    black_configparser, "_get_options_from_config_files", return_value={}
-)
 def test_no_config_flag_argument_should_skip_processing_arguments(
-    mocked_function: mock.MagicMock,
+    mock_options_getters: Iterator[None],
 ) -> None:
     given_user_given_argv = [
         f"--{black_configparser.NO_CONFIG_FLAG}",
@@ -66,14 +68,10 @@ def test_no_config_flag_argument_should_skip_processing_arguments(
     result = black_configparser._prepare_argv(given_user_given_argv)
 
     assert result == expected_result
-    mocked_function.assert_not_called()
 
 
-@mock.patch.object(
-    black_configparser, "_get_options_from_config_files", return_value={}
-)
 def test_config_argument_should_raise_exception(
-    mocked_function: mock.MagicMock,
+    mock_options_getters: Iterator[None],
 ) -> None:
     given_user_given_argv = ["--config"]
     expected_error = (
@@ -84,28 +82,23 @@ def test_config_argument_should_raise_exception(
     with pytest.raises(RuntimeError, match=expected_error):
         black_configparser._prepare_argv(given_user_given_argv)
 
-    mocked_function.assert_not_called()
 
-
-@mock.patch.object(
-    black_configparser, "_get_options_from_config_files", return_value={}
-)
-def test_check_argument_should_be_preserved(mocked_function: mock.MagicMock) -> None:
-    given_user_given_argv = ["--check", CWD]
+@pytest.mark.parametrize("argument_name", ("--check", "--diff", "--verbose"))
+def test_arguments_that_should_be_preserved(
+    mock_options_getters: Iterator[None],
+    argument_name: str,
+) -> None:
+    given_user_given_argv = [argument_name, CWD]
     expected_result = tuple(given_user_given_argv)
 
     result = black_configparser._prepare_argv(given_user_given_argv)
 
     assert result == expected_result
-    mocked_function.assert_called_once()
 
 
-@mock.patch.object(
-    black_configparser, "_get_options_from_config_files", return_value={}
-)
 @pytest.mark.parametrize("argument_name", ("-c", "--code"))
 def test_code_argument_should_be_preserved(
-    mocked_function: mock.MagicMock, argument_name: str
+    mock_options_getters: Iterator[None], argument_name: str
 ) -> None:
     given_user_given_argv = [
         "--check",
@@ -118,12 +111,8 @@ def test_code_argument_should_be_preserved(
     result = black_configparser._prepare_argv(given_user_given_argv)
 
     assert result == expected_result
-    mocked_function.assert_called_once()
 
 
-@mock.patch.object(
-    black_configparser, "_get_options_from_config_files", return_value={}
-)
 @pytest.mark.parametrize(
     "pwd, path_to_check",
     (
@@ -133,7 +122,7 @@ def test_code_argument_should_be_preserved(
     ),
 )
 def test_logic_should_allow_checking_given_path(
-    mocked_function: mock.MagicMock, pwd: str, path_to_check: str
+    mock_options_getters: Iterator[None], pwd: str, path_to_check: str
 ) -> None:
     given_user_given_argv = [
         "--check",
@@ -145,15 +134,11 @@ def test_logic_should_allow_checking_given_path(
         result = black_configparser._prepare_argv(given_user_given_argv)
 
     assert result == expected_result
-    mocked_function.assert_called_once()
 
 
-@mock.patch.object(
-    black_configparser, "_get_options_from_config_files", return_value={}
-)
 @pytest.mark.parametrize("given_path", ("./the/relative/path", "/absolute/path"))
 def test_should_raise_exception_for_malformed_path(
-    mocked_function: mock.MagicMock, given_path: str
+    mock_options_getters: Iterator[None], given_path: str
 ) -> None:
     given_user_given_argv = ["--check", given_path]
     expected_error = (
@@ -164,6 +149,19 @@ def test_should_raise_exception_for_malformed_path(
     with pytest.raises(RuntimeError, match=expected_error):
         black_configparser._prepare_argv(given_user_given_argv)
 
+
+@mock.patch.object(
+    black_configparser, "_get_options_from_config_files", return_value={}
+)
+def test_should_skip_whole_processing_when_no_black_config_in_files(
+    mocked_function: mock.MagicMock,
+) -> None:
+    given_user_given_argv = ["--whatever"]
+    expected_result = tuple(given_user_given_argv)
+
+    result = black_configparser._prepare_argv(given_user_given_argv)
+
+    assert result == expected_result
     mocked_function.assert_called_once()
 
 

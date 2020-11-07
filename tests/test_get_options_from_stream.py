@@ -81,9 +81,9 @@ EXPECTED_CONFIG_OPTIONS = (
     "given_config_file, expected_result",
     zip(GIVEN_CONFIG_FILES, EXPECTED_CONFIG_OPTIONS),
 )
-def test_get_options_from_stream(
+def test_get_options_from_file_stream(
     given_config_file: str, expected_result: Dict[str, Any]
 ) -> None:
     file = io.StringIO(dedent(given_config_file))
-    result = black_configparser._get_options_from_stream(file, "lorem_ipsum")
+    result = black_configparser._get_options_from_file_stream(file, "lorem_ipsum")
     assert result == expected_result

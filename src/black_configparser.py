@@ -7,27 +7,12 @@ from typing import Deque, Dict, Iterator, List, Optional, TextIO, Tuple, Union
 import click
 import sh
 
-__all__ = (
-    "CONFIG_FILES",
-    "CONFIG_SECTIONS",
-    "NO_CONFIG_FLAG",
-    "PWD",
-    "ParamValue",
-    "ParamsType",
-    "_get_options_from_config_files",
-    "_get_options_from_stream",
-    "_make_key",
-    "_make_value",
-    "_open_config_files",
-    "_prepare_argv",
-    "main",
-)
-
 PWD = os.getcwd()
 
 CONFIG_FILES = ("setup.cfg", "tox.ini")
 CONFIG_SECTIONS = ("black", "tools:black")
 NO_CONFIG_FLAG = "no-config-file"
+ALLOWED_ARGUMENTS = ("--check", "--diff", "--verbose")
 
 ParamValue = Optional[Tuple[str, ...]]
 ParamsType = Dict[str, ParamValue]
@@ -45,12 +30,12 @@ def _get_options_from_config_files() -> ParamsType:
     options: ParamsType = {}
 
     for file_stream, file_name in _open_config_files():
-        options.update(_get_options_from_stream(file_stream, file_name))
+        options.update(_get_options_from_file_stream(file_stream, file_name))
 
     return options
 
 
-def _get_options_from_stream(  # noqa:C901
+def _get_options_from_file_stream(  # noqa:C901
     file_stream: TextIO, file_name: str
 ) -> ParamsType:
     result: ParamsType = {}
@@ -62,11 +47,16 @@ def _get_options_from_stream(  # noqa:C901
         if section_name not in config:
             continue
 
+        items_in_section = dict(config[section_name])
+
+        if not items_in_section:  # pragma:no cover
+            continue
+
         click.secho(
             f"Using [{section_name}] configuration from {file_name}.", fg="blue"
         )
 
-        for key, value in dict(config[section_name]).items():
+        for key, value in items_in_section.items():
             try:
                 value = config.getboolean(section_name, key)  # type:ignore
             except ValueError:
@@ -80,6 +70,20 @@ def _get_options_from_stream(  # noqa:C901
                 continue
 
             result[_make_key(key)] = _make_value(value)
+
+    return result
+
+
+def _convert_options_to_argv(options: ParamsType) -> Deque[str]:
+    result: Deque[str] = collections.deque()
+
+    for option, values_list in options.items():
+        if values_list is None:
+            result.append(option)
+            continue
+
+        for value in values_list:
+            result += [option, value]
 
     return result
 
@@ -100,6 +104,13 @@ def _make_value(value: Union[str, bool]) -> ParamValue:
 def _prepare_argv(user_given_argv: List[str]) -> Tuple[str, ...]:  # noqa:C901
     result: Deque[str] = collections.deque()
 
+    options_from_config_file = _convert_options_to_argv(
+        _get_options_from_config_files()
+    )
+
+    if not options_from_config_file:
+        return tuple(user_given_argv)
+
     if "--help" in user_given_argv or "--version" in user_given_argv:
         return tuple(user_given_argv)
 
@@ -113,9 +124,11 @@ def _prepare_argv(user_given_argv: List[str]) -> Tuple[str, ...]:  # noqa:C901
             f"Please define options in config file or use --{NO_CONFIG_FLAG} flag."
         )
 
-    if "--check" in user_given_argv:
-        user_given_argv.remove("--check")
-        result.append("--check")
+    for argument_name in ALLOWED_ARGUMENTS:
+        if argument_name not in user_given_argv:
+            continue
+        user_given_argv.remove(argument_name)
+        result.append(argument_name)
 
     if "-c" in user_given_argv or "--code" in user_given_argv:
         try:
@@ -128,13 +141,8 @@ def _prepare_argv(user_given_argv: List[str]) -> Tuple[str, ...]:  # noqa:C901
             user_given_argv.pop(_code_arg_index),
         ]
 
-    for option, values_list in _get_options_from_config_files().items():
-        if values_list is None:
-            result.append(option)
-            continue
-
-        for value in values_list:
-            result += [option, value]
+    if isinstance(options_from_config_file, collections.deque):
+        result += options_from_config_file
 
     for arg in user_given_argv:
         _maybe_path = arg if os.path.isabs(arg) else os.path.join(PWD, arg)

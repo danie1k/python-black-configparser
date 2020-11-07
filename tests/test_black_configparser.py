@@ -40,15 +40,15 @@ def test_get_options_from_config_files(*_mocks: mock.MagicMock) -> None:
         "--file-ipsum": "lorem",
     }
 
-    def _mocked_get_options_from_stream(
+    def _mocked_get_options_from_file_stream(
         file_stream: IO[str], file_name: str
     ) -> Dict[str, str]:
         return {f"--file-{file_name}": file_stream.read()}
 
     with mock.patch.object(
         black_configparser,
-        "_get_options_from_stream",
-        side_effect=_mocked_get_options_from_stream,
+        "_get_options_from_file_stream",
+        side_effect=_mocked_get_options_from_file_stream,
     ):
         result = black_configparser._get_options_from_config_files()
 

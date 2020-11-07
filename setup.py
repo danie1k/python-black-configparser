@@ -1,18 +1,28 @@
 #!/usr/bin/env python
-from setuptools import setup
+import collections
 import pathlib
 
+from setuptools import setup
 
 setup(
     name="black-configparser",
-    version="0.0.5",
+    version="0.1.0b2",
     author="Daniel Kuruc",
     author_email="daniel@kuruc.dev",
     license="MIT",
-    url="https://github.com/danie1k/black_configparser",
+    url="https://github.com/danie1k/python-black-configparser",
+    project_urls=collections.OrderedDict(
+        (
+            ("Code", "https://github.com/danie1k/python-black-configparser"),
+            (
+                "Issue tracker",
+                "https://github.com/danie1k/python-black-configparser/issues",
+            ),
+        )
+    ),
     description=(
-        "Seamless Proxy CLI for black (The uncompromising code formatter) "
-        "with support for setup.cfg & tox.ini config files"
+        "Seamless Proxy CLI for black (\"The uncompromising code formatter\") "
+        "with support for non-pyproject.toml config files"
     ),
     long_description=(pathlib.Path(__file__).parent / "README.md").read_text("utf8"),
     long_description_content_type="text/markdown",
@@ -43,4 +53,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Software Development :: Quality Assurance",
     ],
+    entry_points={
+        "console_scripts": ["black=black_configparser.black_configparser:main"]
+    },
 )
