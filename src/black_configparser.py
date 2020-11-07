@@ -91,16 +91,10 @@ def _make_key(value: str) -> str:
 
 
 def _make_value(value: Union[str, bool]) -> ParamValue:
-    if value is True:
+    if isinstance(value, bool):
         return None
 
-    if isinstance(value, str):
-        value = value.strip().split("\n")  # type:ignore
-
-    if not isinstance(value, (list, tuple)):
-        value = [value]  # type:ignore
-
-    return tuple(filter(bool, value))  # type:ignore
+    return tuple(filter(bool, value.strip().split("\n")))
 
 
 def _prepare_argv(user_given_argv: List[str]) -> Tuple[str, ...]:  # noqa:C901
