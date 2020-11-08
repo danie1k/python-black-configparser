@@ -12,7 +12,7 @@ try:
     from black_configparser import (  # pylint:disable=unused-import  # noqa:F401
         black_configparser,
     )
-except ImportError:
+except ImportError:  # pragma: no cover
     pytest.skip(
         "The 'black_configparser.black_configparser' package is not installed",
         allow_module_level=True,

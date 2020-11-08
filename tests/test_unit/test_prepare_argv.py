@@ -7,7 +7,7 @@ import pytest
 
 try:
     from black_configparser import black_configparser
-except ImportError:
+except ImportError:  # pragma: no cover
     import black_configparser  # type:ignore
 
 
