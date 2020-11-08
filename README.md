@@ -24,8 +24,8 @@ with support for non-`pyproject.toml` config files.
 
 ## About the Project
 
-The `black-configparser` ia yet another tool (next to [brunette](https://pypi.org/project/brunette/),
-[white](https://pypi.org/project/white/), and maybe a few more out there),
+The `black-configparser` is yet another tool *(next to [brunette](https://pypi.org/project/brunette/),
+[white](https://pypi.org/project/white/), and maybe a few more out there)*,
 which tries to fill [the gap of missing `setup.cfg`](https://github.com/psf/black/issues/688)
 (or just [any other non-`pyproject.toml`](https://github.com/psf/black/issues/683)) config file.
 
