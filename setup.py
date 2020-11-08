@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name="black-configparser",
-    version="0.1.0b2",
+    version="0.2.0b2",
     author="Daniel Kuruc",
     author_email="daniel@kuruc.dev",
     license="MIT",
@@ -21,7 +21,7 @@ setup(
         )
     ),
     description=(
-        "Seamless Proxy CLI for black (\"The uncompromising code formatter\") "
+        'Seamless Proxy CLI for black ("The uncompromising code formatter") '
         "with support for non-pyproject.toml config files"
     ),
     long_description=(pathlib.Path(__file__).parent / "README.md").read_text("utf8"),
@@ -29,12 +29,19 @@ setup(
     keywords=(
         "automation formatter yapf autopep8 pyfmt gofmt rustfmt black white brunette"
     ),
-    package_dir={"black_configparser": "src"},
+    package_dir={"black_configparser": "black_configparser"},
     packages=["black_configparser"],
     package_data={"black_configparser": ("py.typed",)},
     python_requires=">=3.6",
-    install_requires=("black>=18.6b2", "click>=6.5", "sh>=1.13.0"),
+    install_requires=("black>=18.6b2",),
     extras_require={
+        "lint": (
+            "black>=18.6b2",
+            "flake8>=3.8.0",
+            "isort>=5.6.0",
+            "mypy>=0.790",
+            "pylint>=2.6.0",
+        ),
         "tests": ("coverage>=5.0", "pytest>=6.0", "pytest-sugar>=0.9"),
     },
     zip_safe=False,

@@ -3,6 +3,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/black-configparser)](https://pypi.org/project/black-configparser/)
 [![PyPI](https://img.shields.io/pypi/v/black-configparser)](https://pypi.org/project/black-configparser/)
 [![MIT License](https://img.shields.io/github/license/danie1k/python-black-configparser)](https://github.com/danie1k/python-black-configparser/blob/master/LICENSE)
+![Automatic PyPI Release](https://github.com/danie1k/python-black-configparser/workflows/PyPi%20Release/badge.svg)
 
 # black-configparser
 
@@ -42,7 +43,7 @@ Unlike other tools, tries to stay **dumb simple** and add only minimum needed ov
 ## Installation
 
 ```
-pip install black-configparser
+$ pip install black-configparser
 ```
 
 
@@ -52,8 +53,20 @@ pip install black-configparser
 - Configuration file section: `[black]` or `[tools:black]`.
 
 **Important!** :warning:  
-> When you `black-configparser` finds black configuration in file, most command line arguments won't be available anymore,
-> except: `--check`, `--code`, `--diff`, `--help`, `--verbose` & `--version`.
+- When you `black-configparser` finds black configuration in any of supported file(s),
+    most black's built-in command line arguments become unavailable.  
+    Exceptions:
+    - `--check`
+    - `--code`
+    - `--diff`
+    - `--help`
+    - `--verbose`
+    - `--version`
+- The `black-configparser` can be temporarily disabled, by adding `--no-config-file` flag to `black` command,
+    for example:
+    ```
+    $ black --no-config-file --check ./path/to/file.py
+    ```
 
 ### Example configuration
 
@@ -72,7 +85,7 @@ pyi = True
 skip-string-normalization = True
 color = True
 include = \.pyi?$
-exclude = /(\.direnv|\.eggs|\.git|\.hg|\.mypy_cache|\.nox|\.tox|\.venv|\.svn|_build|buck-out|build|dist)/]
+exclude = /(\.direnv|\.eggs|\.git|\.hg|\.mypy_cache|\.nox|\.tox|\.venv|\.svn|_build|buck-out|build|dist)/
 force-exclude = lorem ipsum
 quiet = True
 verbose = True
@@ -85,7 +98,7 @@ verbose = True
 
 ## Known issues
 
-- Undefined behavior, when one of allowed CLI arguments will be also put inside config file.
+- Undefined behavior, when running with one of allowed CLI arguments which is also set in the config file.
 - After `black-configparser` package is uninstalled, the `black` command does not work anymore
     and [black](https://pypi.org/project/black/) package must be reinstalled.
 

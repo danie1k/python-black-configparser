@@ -5,7 +5,6 @@ import sys
 from typing import Deque, Dict, Iterator, List, Optional, TextIO, Tuple, Union
 
 import click
-import sh
 
 PWD = os.getcwd()
 
@@ -49,11 +48,13 @@ def _get_options_from_file_stream(  # noqa:C901
 
         items_in_section = dict(config[section_name])
 
-        if not items_in_section:  # pragma:no cover
-            continue
+        if not items_in_section:
+            continue  # pragma:no cover
 
         click.secho(
-            f"Using [{section_name}] configuration from {file_name}.", fg="blue"
+            f"Using [{section_name}] configuration from {file_name}.",
+            fg="blue",
+            err=True,
         )
 
         for key, value in items_in_section.items():
@@ -108,14 +109,18 @@ def _prepare_argv(user_given_argv: List[str]) -> Tuple[str, ...]:  # noqa:C901
         _get_options_from_config_files()
     )
 
+    _no_config_file = False
+    if f"--{NO_CONFIG_FLAG}" in user_given_argv:
+        user_given_argv.remove(f"--{NO_CONFIG_FLAG}")
+        _no_config_file = True
+
     if not options_from_config_file:
         return tuple(user_given_argv)
 
     if "--help" in user_given_argv or "--version" in user_given_argv:
         return tuple(user_given_argv)
 
-    if f"--{NO_CONFIG_FLAG}" in user_given_argv:
-        user_given_argv.remove(f"--{NO_CONFIG_FLAG}")
+    if _no_config_file:
         return tuple(user_given_argv)
 
     if "--config" in user_given_argv:
@@ -158,9 +163,19 @@ def _prepare_argv(user_given_argv: List[str]) -> Tuple[str, ...]:  # noqa:C901
     return tuple(result)
 
 
-def main() -> None:  # pragma:no cover
-    argv = _prepare_argv(sys.argv[1:])
-    sh.python("-m", "black", *argv, _fg=True)  # pylint:disable=no-member
+def main() -> None:
+    try:
+        sys.argv = [sys.argv[1], *_prepare_argv(sys.argv[1:])]
+    except RuntimeError as ex:  # pragma:no cover
+        click.secho(str(ex), fg="red", err=True)
+        sys.exit(1)
+
+    try:
+        from black import patched_main as black_main
+    except ImportError:  # pragma:no cover
+        from black import main as black_main
+
+    sys.exit(black_main())
 
 
 if __name__ == "__main__":  # pragma:no cover

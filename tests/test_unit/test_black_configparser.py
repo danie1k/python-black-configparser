@@ -2,7 +2,10 @@ import io
 from typing import IO, Any, Dict
 from unittest import mock
 
-import black_configparser
+try:
+    from black_configparser import black_configparser
+except ImportError:
+    import black_configparser  # type:ignore
 
 # pylint:disable=protected-access
 
