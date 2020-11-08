@@ -3,7 +3,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/black-configparser)](https://pypi.org/project/black-configparser/)
 [![PyPI](https://img.shields.io/pypi/v/black-configparser)](https://pypi.org/project/black-configparser/)
 [![MIT License](https://img.shields.io/github/license/danie1k/python-black-configparser)](https://github.com/danie1k/python-black-configparser/blob/master/LICENSE)
-![Automatic PyPI Release](https://github.com/danie1k/python-black-configparser/workflows/PyPi%20Release/badge.svg)
+[![Automatic PyPI Release](https://github.com/danie1k/python-black-configparser/workflows/PyPi%20Release/badge.svg)](https://github.com/danie1k/python-black-configparser/actions)
 
 # black-configparser
 
